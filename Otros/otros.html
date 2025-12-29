@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tazas - Miktlan Store</title>
+    <title>Otros Productos - Miktlan Store</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
         .back-btn {
@@ -168,8 +168,8 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <div class="logo">☕</div>
-            <h1>Tazas - Miktlan Store</h1>
+            <div class="logo">🎁</div>
+            <h1>Otros Productos - Miktlan Store</h1>
         </div>
     </header>
 
@@ -180,10 +180,10 @@
             <li class="dropdown">
                 <a href="../index.html#productos">Productos ▼</a>
                 <div class="dropdown-content">
-                    <a href="tazas.html">Tazas</a>
+                    <a href="../Tazas/tazas.html">Tazas</a>
                     <a href="../Cuadros/cuadros.html">Cuadros</a>
                     <a href="../Playeras/playeras.html">Playeras</a>
-                    <a href="../Otros/otros.html">Otros</a>
+                    <a href="otros.html">Otros</a>
                 </div>
             </li>
             <li><a href="../index.html#contacto">Contacto</a></li>
@@ -195,7 +195,7 @@
     <main class="container">
         <a href="../index.html" class="back-btn">← Volver al Inicio</a>
         
-        <h2 class="section-title">Diseños de Tazas</h2>
+        <h2 class="section-title">Otros Productos</h2>
 
         <!-- Selector de Fechas Especiales -->
         <div style="text-align: center; margin: 30px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
@@ -225,7 +225,7 @@
     <footer>
         <p>&copy; 2025 Miktlan Store. Todos los derechos reservados.</p>
         <p>Calidad, estilo y personalización al alcance de tu mano.</p>
-        <p>Contacto: info@miktlanstore.com | Teléfono y whatsapp: 771 109 5023</p>
+        <p>Contacto: info@miktlanstore.com | Teléfono: +1-800-123-4567</p>
     </footer>
 
     <script>
@@ -293,7 +293,7 @@
                 
                 if (images.length === 0) {
                     const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
-                    container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}. Asegúrate de que existen en la carpeta Tazas/${imageFolder}/ nombradas como 1.png, 2.png, 3.png, etc.</p>`;
+                    container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}. Asegúrate de que existen en la carpeta Otros/${imageFolder}/ nombradas como 1.png, 2.png, 3.png, etc.</p>`;
                     return;
                 }
                 
@@ -303,13 +303,13 @@
                     const imageNumber = image.split('.')[0];
                     html += `
                         <div class="product-card">
-                            <img src="${imageFolder}/${image}" alt="Diseño de taza ${imageNumber}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                            <img src="${imageFolder}/${image}" alt="Producto ${imageNumber}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
                             <div class="product-info">
-                                <h3>Diseño #${imageNumber}</h3>
-                                <p>Diseño personalizado de taza de alta calidad.</p>
+                                <h3>Producto #${imageNumber}</h3>
+                                <p>Artículo personalizado de alta calidad.</p>
                                 <div class="btn-container">
                                     <button class="btn-design" onclick="viewDesign('${imageFolder}/${image}')">Ver Diseño</button>
-                                    <button class="btn-order" onclick="orderProduct('Diseño #${imageNumber}')">Ordenar</button>
+                                    <button class="btn-order" onclick="orderProduct('Producto #${imageNumber}')">Ordenar</button>
                                 </div>
                             </div>
                         </div>

@@ -205,13 +205,15 @@
                 const response = await fetch('list_images.php?folder=imagenes');
                 
                 if (!response.ok) {
-                    throw new Error('Error al cargar las imágenes');
+                    throw new Error('Error HTTP: ' + response.status);
                 }
                 
                 const images = await response.json();
                 
+                console.log('Imágenes encontradas:', images); // Para debugging
+                
                 if (images.length === 0) {
-                    container.innerHTML = '<p class="error">No hay imágenes disponibles en la carpeta de tazas.</p>';
+                    container.innerHTML = '<p class="error">No hay imágenes disponibles en la carpeta de tazas. Asegúrate de crear una carpeta "imagenes" dentro de Tazas/ y subir imágenes allí.</p>';
                     return;
                 }
                 
@@ -237,7 +239,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                container.innerHTML = '<p class="error">Error al cargar las imágenes. Asegúrate de que la carpeta "imagenes" existe y contiene archivos de imagen.</p>';
+                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '. Verifica que la carpeta "imagenes" existe dentro de Tazas/ y contiene archivos de imagen.</p>';
             }
         }
 

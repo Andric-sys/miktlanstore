@@ -26,6 +26,6 @@ if (is_dir($images_dir)) {
 }
 
 // Devolver como JSON
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode(array_values($images));
 ?>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tazas - Miktlan Store</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background-color: #9C27B0;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #7B1FA2;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .btn-design, .btn-order {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-design {
+            background-color: #9C27B0;
+            color: white;
+        }
+
+        .btn-design:hover {
+            background-color: #7B1FA2;
+        }
+
+        .btn-order {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-order:hover {
+            background-color: #45a049;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            grid-column: 1/-1;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            grid-column: 1/-1;
+            color: #d32f2f;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .close-modal:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">☕</div>
+            <h1>Tazas - Miktlan Store</h1>
+        </div>
+    </header>
+
+    <!-- Navbar -->
+    <nav>
+        <ul>
+            <li><a href="../index.html">Inicio</a></li>
+            <li class="dropdown">
+                <a href="../index.html#productos">Productos ▼</a>
+                <div class="dropdown-content">
+                    <a href="tazas.html">Tazas</a>
+                    <a href="../Cuadros/cuadros.html">Cuadros</a>
+                    <a href="../Playeras/playeras.html">Playeras</a>
+                    <a href="../Otros/otros.html">Otros</a>
+                </div>
+            </li>
+            <li><a href="../index.html#contacto">Contacto</a></li>
+            <li><a href="../index.html#nosotros">Nosotros</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <a href="../index.html" class="back-btn">← Volver al Inicio</a>
+        
+        <h2 class="section-title">Diseños de Tazas</h2>
+
+        <div class="products-grid" id="productsContainer">
+            <p class="loading">Cargando diseños...</p>
+        </div>
+    </main>
+
+    <!-- Modal para ampliar imagen -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <img id="modalImage" src="" alt="Diseño ampliado">
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Miktlan Store. Todos los derechos reservados.</p>
+        <p>Calidad, estilo y personalización al alcance de tu mano.</p>
+        <p>Contacto: info@miktlanstore.com | Teléfono: +1-800-123-4567</p>
+    </footer>
+
+    <script>
+        // Cargar las imágenes desde la carpeta imagenes
+        async function loadImages() {
+            const container = document.getElementById('productsContainer');
+            
+            try {
+                // Obtener la lista de imágenes
+                const response = await fetch('list_images.php?folder=imagenes');
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar las imágenes');
+                }
+                
+                const images = await response.json();
+                
+                if (images.length === 0) {
+                    container.innerHTML = '<p class="error">No hay imágenes disponibles en la carpeta de tazas.</p>';
+                    return;
+                }
+                
+                // Crear las tarjetas de productos
+                let html = '';
+                images.forEach((image, index) => {
+                    html += `
+                        <div class="product-card">
+                            <img src="imagenes/${image}" alt="Diseño de taza ${index + 1}" class="product-image" loading="lazy">
+                            <div class="product-info">
+                                <h3>${image.split('.')[0]}</h3>
+                                <p>Diseño personalizado de taza de alta calidad.</p>
+                                <div class="btn-container">
+                                    <button class="btn-design" onclick="viewDesign('imagenes/${image}')">Ver Diseño</button>
+                                    <button class="btn-order" onclick="orderProduct('${image.split('.')[0]}')">Ordenar</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<p class="error">Error al cargar las imágenes. Asegúrate de que la carpeta "imagenes" existe y contiene archivos de imagen.</p>';
+            }
+        }
+
+        function viewDesign(imagePath) {
+            // Mostrar la imagen en un modal sin abrir nueva pestaña
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imagePath;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+
+        // Cerrar modal al hacer clic fuera de la imagen
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Cerrar modal con la tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        function orderProduct(productName) {
+            alert('¡Gracias por tu interés en: ' + productName + '!\n\nSerás redirigido al formulario de pedido.');
+            // Aquí puedes redirigir a una página de pedido o abrir un formulario
+            // window.location.href = 'orden.html?producto=' + encodeURIComponent(productName);
+        }
+
+        // Cargar las imágenes cuando la página carga
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>

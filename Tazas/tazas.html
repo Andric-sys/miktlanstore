@@ -196,40 +196,67 @@
     </footer>
 
     <script>
-        // Cargar las imágenes desde el archivo JSON
+        // Cargar las imágenes numeradas automáticamente
         async function loadImages() {
             const container = document.getElementById('productsContainer');
             
             try {
-                // Obtener la lista de imágenes desde JSON
-                const response = await fetch('imagenes.json');
+                let images = [];
+                let imageNumber = 1;
+                let consecutiveMissing = 0;
+                const maxConsecutiveMissing = 10; // Si encuentra 10 imágenes faltantes seguidas, detiene la búsqueda
                 
-                if (!response.ok) {
-                    throw new Error('Error al cargar el archivo imagenes.json');
+                container.innerHTML = '<p class="loading">Buscando imágenes...</p>';
+                
+                // Buscar imágenes numeradas
+                while (consecutiveMissing < maxConsecutiveMissing) {
+                    const imagePath = `imagenes/${imageNumber}.png`;
+                    
+                    try {
+                        // Intentar obtener la imagen
+                        const response = await fetch(imagePath, { method: 'HEAD' });
+                        
+                        if (response.ok) {
+                            images.push(`${imageNumber}.png`);
+                            consecutiveMissing = 0; // Resetear contador
+                            console.log(`Imagen encontrada: ${imageNumber}.png`);
+                        } else {
+                            consecutiveMissing++;
+                            console.log(`Imagen no encontrada: ${imageNumber}.png`);
+                        }
+                    } catch (error) {
+                        consecutiveMissing++;
+                        console.log(`Error al buscar: ${imageNumber}.png`);
+                    }
+                    
+                    imageNumber++;
+                    
+                    // Mostrar progreso cada 10 imágenes
+                    if (imageNumber % 10 === 0) {
+                        container.innerHTML = `<p class="loading">Buscando imágenes... (${imageNumber - 1} encontradas)</p>`;
+                    }
                 }
                 
-                const data = await response.json();
-                const images = data.imagenes || [];
-                
-                console.log('Imágenes encontradas:', images); // Para debugging
+                console.log('Búsqueda completada. Imágenes encontradas:', images.length);
                 
                 if (images.length === 0) {
-                    container.innerHTML = '<p class="error">No hay imágenes disponibles. Edita el archivo imagenes.json para agregar tus imágenes.</p>';
+                    container.innerHTML = '<p class="error">No se encontraron imágenes. Asegúrate de que existen en la carpeta Tazas/imagenes/ nombradas como 1.png, 2.png, 3.png, etc.</p>';
                     return;
                 }
                 
                 // Crear las tarjetas de productos
                 let html = '';
                 images.forEach((image, index) => {
+                    const imageNumber = image.split('.')[0];
                     html += `
                         <div class="product-card">
-                            <img src="imagenes/${image}" alt="Diseño de taza ${index + 1}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                            <img src="imagenes/${image}" alt="Diseño de taza ${imageNumber}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
                             <div class="product-info">
-                                <h3>${image.split('.')[0]}</h3>
+                                <h3>Diseño #${imageNumber}</h3>
                                 <p>Diseño personalizado de taza de alta calidad.</p>
                                 <div class="btn-container">
                                     <button class="btn-design" onclick="viewDesign('imagenes/${image}')">Ver Diseño</button>
-                                    <button class="btn-order" onclick="orderProduct('${image.split('.')[0]}')">Ordenar</button>
+                                    <button class="btn-order" onclick="orderProduct('Diseño #${imageNumber}')">Ordenar</button>
                                 </div>
                             </div>
                         </div>
@@ -240,7 +267,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '. Asegúrate de que el archivo imagenes.json existe en la carpeta Tazas/.</p>';
+                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '</p>';
             }
         }
 

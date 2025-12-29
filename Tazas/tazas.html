@@ -192,28 +192,29 @@
     <footer>
         <p>&copy; 2025 Miktlan Store. Todos los derechos reservados.</p>
         <p>Calidad, estilo y personalización al alcance de tu mano.</p>
-        <p>Contacto: info@miktlanstore.com | Teléfono: +1-800-123-4567</p>
+        <p>Contacto: info@miktlanstore.com | Teléfono y whatsapp: 771 109 5023</p>
     </footer>
 
     <script>
-        // Cargar las imágenes desde la carpeta imagenes
+        // Cargar las imágenes desde el archivo JSON
         async function loadImages() {
             const container = document.getElementById('productsContainer');
             
             try {
-                // Obtener la lista de imágenes
-                const response = await fetch('list_images.php?folder=imagenes');
+                // Obtener la lista de imágenes desde JSON
+                const response = await fetch('imagenes.json');
                 
                 if (!response.ok) {
-                    throw new Error('Error HTTP: ' + response.status);
+                    throw new Error('Error al cargar el archivo imagenes.json');
                 }
                 
-                const images = await response.json();
+                const data = await response.json();
+                const images = data.imagenes || [];
                 
                 console.log('Imágenes encontradas:', images); // Para debugging
                 
                 if (images.length === 0) {
-                    container.innerHTML = '<p class="error">No hay imágenes disponibles en la carpeta de tazas. Asegúrate de crear una carpeta "imagenes" dentro de Tazas/ y subir imágenes allí.</p>';
+                    container.innerHTML = '<p class="error">No hay imágenes disponibles. Edita el archivo imagenes.json para agregar tus imágenes.</p>';
                     return;
                 }
                 
@@ -222,7 +223,7 @@
                 images.forEach((image, index) => {
                     html += `
                         <div class="product-card">
-                            <img src="imagenes/${image}" alt="Diseño de taza ${index + 1}" class="product-image" loading="lazy">
+                            <img src="imagenes/${image}" alt="Diseño de taza ${index + 1}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
                             <div class="product-info">
                                 <h3>${image.split('.')[0]}</h3>
                                 <p>Diseño personalizado de taza de alta calidad.</p>
@@ -239,7 +240,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '. Verifica que la carpeta "imagenes" existe dentro de Tazas/ y contiene archivos de imagen.</p>';
+                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '. Asegúrate de que el archivo imagenes.json existe en la carpeta Tazas/.</p>';
             }
         }
 

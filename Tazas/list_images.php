@@ -2,55 +2,57 @@
 // Configurar encoding UTF-8
 header('Content-Type: application/json; charset=utf-8');
 
-// Obtener la carpeta solicitada
+// Obtener la carpeta solicitada (por defecto 'imagenes')
 $folder = isset($_GET['folder']) ? trim($_GET['folder']) : 'imagenes';
 
-// Limpiar el nombre de la carpeta para seguridad
-$folder = str_replace(['../', '..\\', '\\', '/', '..'], '', $folder);
+// Extensiones de imagen permitidas (solo jpg/jpeg/png según petición)
+$allowed_extensions = array('jpg', 'jpeg', 'png');
 
-// Extensiones de imagen permitidas
-$allowed_extensions = array('jpg', 'jpeg', 'png', 'gif', 'webp');
-
-// Obtener la ruta completa
 $current_dir = dirname(__FILE__);
-$images_dir = $current_dir . DIRECTORY_SEPARATOR . $folder;
+$base_dir = $current_dir . DIRECTORY_SEPARATOR;
+
+// Resolver ruta y prevenir traversal
+$requested_path = $base_dir . $folder;
+$images_dir = realpath($requested_path);
 
 $images = array();
 
-// Verificar si la carpeta existe
-if (is_dir($images_dir)) {
-    // Obtener todos los archivos de la carpeta
-    $files = scandir($images_dir);
-    
-    if ($files !== false) {
-        foreach ($files as $file) {
-            // Saltar archivos especiales
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            
-            $full_path = $images_dir . DIRECTORY_SEPARATOR . $file;
-            
-            // Verificar si es un archivo
-            if (!is_file($full_path)) {
-                continue;
-            }
-            
-            // Obtener la extensión del archivo
-            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            
-            // Verificar si la extensión está permitida
-            if (in_array($extension, $allowed_extensions)) {
-                $images[] = $file;
+if ($images_dir === false || strpos($images_dir, $base_dir) !== 0) {
+    // Ruta inválida o intento de traversal -> devolver array vacío
+    echo json_encode($images);
+    exit;
+}
+
+// Escaneo recursivo para archivos con extensiones permitidas
+try {
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($images_dir, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $fileinfo) {
+        if ($fileinfo->isFile()) {
+            $ext = strtolower(pathinfo($fileinfo->getFilename(), PATHINFO_EXTENSION));
+            if (in_array($ext, $allowed_extensions)) {
+                // Ruta relativa dentro de la carpeta solicitada
+                $relative_path = str_replace('\\', '/', substr($fileinfo->getPathname(), strlen($images_dir) + 1));
+                // Normalizar para archivos en la raíz (substr puede devolver false si coincide exactamente)
+                if ($relative_path === false) {
+                    $relative_path = $fileinfo->getFilename();
+                }
+                // Devolver con el prefijo de la carpeta solicitada para uso directo en HTML
+                $images[] = rtrim($folder, '/\\') . '/' . ltrim($relative_path, '/\\');
             }
         }
     }
-    
-    // Ordenar alfabéticamente
-    sort($images);
+} catch (Exception $e) {
+    // En caso de error, devolver lista vacía
+    echo json_encode(array());
+    exit;
 }
 
-// Devolver como JSON
+// Ordenar y devolver JSON
+sort($images, SORT_NATURAL | SORT_FLAG_CASE);
 echo json_encode(array_values($images));
 ?>
 

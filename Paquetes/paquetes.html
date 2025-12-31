@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paquetes - Miktlan Store</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background-color: #9C27B0;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #7B1FA2;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .btn-design, .btn-order {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-design {
+            background-color: #9C27B0;
+            color: white;
+        }
+
+        .btn-design:hover {
+            background-color: #7B1FA2;
+        }
+
+        .btn-order {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-order:hover {
+            background-color: #45a049;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            grid-column: 1/-1;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            grid-column: 1/-1;
+            color: #d32f2f;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            <script>
+                let currentCategory = 'general';
+                let imagesList = [];
+                let currentPage = 1;
+                const pageSize = 30;
+
+                function changeCategory(category) {
+                    currentCategory = category;
+                    document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+                    try { if (event && event.target) event.target.classList.add('active'); } catch(e) {}
+                    currentPage = 1;
+                    loadImages();
+                }
+
+                async function loadImages() {
+                    const container = document.getElementById('productsContainer');
+                    container.innerHTML = '<p class="loading">Cargando diseños...</p>';
+                    const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
+
+                    try {
+                        const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
+                        if (!resp.ok) throw new Error('No se pudo obtener la lista de imágenes');
+                        imagesList = await resp.json();
+
+                        if (!imagesList || imagesList.length === 0) {
+                            const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
+                            container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}.</p>`;
+                            updatePagination();
+                            return;
+                        }
+
+                        renderPage(1);
+                    } catch (error) {
+                        console.error(error);
+                        container.innerHTML = `<p class="error">Error al cargar las imágenes: ${error.message}</p>`;
+                    }
+                }
+
+                function renderPage(page) {
+                    const container = document.getElementById('productsContainer');
+                    currentPage = page;
+                    const start = (page - 1) * pageSize;
+                    const pageItems = imagesList.slice(start, start + pageSize);
+
+                    if (!pageItems || pageItems.length === 0) {
+                        container.innerHTML = '<p class="error">No hay imágenes en esta página.</p>';
+                    } else {
+                        let html = '';
+                        pageItems.forEach((path) => {
+                            const filename = path.split('/').pop();
+                            const name = filename.split('.')[0];
+                            html += `
+                                <div class="product-card">
+                                    <img src="${path}" alt="Diseño ${name}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                                    <div class="product-info">
+                                        <h3>Diseño #${name}</h3>
+                                        <p>Diseño personalizado de alta calidad.</p>
+                                        <div class="btn-container">
+                                            <button class="btn-design" onclick="viewDesign('${path}')">Ver Diseño</button>
+                                            <button class="btn-order" onclick="orderProduct('Diseño #${name}')">Ordenar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    }
+
+                    updatePagination();
+                }
+
+                function updatePagination() {
+                    let pag = document.getElementById('pagination');
+                    const container = document.getElementById('productsContainer');
+                    if (!pag) {
+                        pag = document.createElement('div');
+                        pag.id = 'pagination';
+                        pag.style.textAlign = 'center';
+                        pag.style.margin = '20px 0';
+                        container.parentNode.insertBefore(pag, container.nextSibling);
+                    }
+
+                    const totalPages = Math.max(1, Math.ceil(imagesList.length / pageSize));
+                    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+                    let html = '';
+                    html += `<button ${currentPage===1?"disabled":""} onclick="changePage(${currentPage-1})">Prev</button>`;
+
+                    const start = Math.max(1, currentPage - 3);
+                    const end = Math.min(totalPages, currentPage + 3);
+                    for (let i = start; i <= end; i++) {
+                        html += ` <button ${i===currentPage?"disabled":""} onclick="changePage(${i})">${i}</button> `;
+                    }
+
+                    html += `<button ${currentPage===totalPages?"disabled":""} onclick="changePage(${currentPage+1})">Next</button>`;
+                    pag.innerHTML = html;
+                }
+
+                function changePage(page) {
+                    const totalPages = Math.max(1, Math.ceil(imagesList.length / pageSize));
+                    if (page < 1) page = 1;
+                    if (page > totalPages) page = totalPages;
+                    renderPage(page);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                function viewDesign(imagePath) {
+                    const modal = document.getElementById('imageModal');
+                    const modalImage = document.getElementById('modalImage');
+                    modalImage.src = imagePath;
+                    modal.classList.add('show');
+                }
+
+                function closeModal() {
+                    const modal = document.getElementById('imageModal');
+                    modal.classList.remove('show');
+                }
+
+                window.onclick = function(event) {
+                    const modal = document.getElementById('imageModal');
+                    if (event.target === modal) closeModal();
+                }
+
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') closeModal();
+                });
+
+                function orderProduct(productName) {
+                    alert('¡Gracias por tu interés en: ' + productName + '!\n\nSerás redirigido al formulario de pedido.');
+                }
+
+                document.addEventListener('DOMContentLoaded', loadImages);
+            </script>
+                    <a href="../Otros/otros.html">Otros</a>
+                </div>
+            </li>
+            <li><a href="../index.html#contacto">Contacto</a></li>
+            <li><a href="../index.html#nosotros">Nosotros</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <a href="../index.html" class="back-btn">← Volver al Inicio</a>
+        
+        <h2 class="section-title">Paquetes Especiales</h2>
+
+        <div style="text-align: center; margin: 30px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+            <button class="date-btn active" onclick="changeCategory('general')">Todos</button>
+            <button class="date-btn" onclick="changeCategory('san-valentin')">San Valentín ❤️</button>
+            <button class="date-btn" onclick="changeCategory('navidad')">Navidad 🎄</button>
+            <button class="date-btn" onclick="changeCategory('anio-nuevo')">Año Nuevo 🎊</button>
+            <button class="date-btn" onclick="changeCategory('halloween')">Halloween 🎃</button>
+            <button class="date-btn" onclick="changeCategory('dia-muertos')">Día de Muertos 💀</button>
+            <button class="date-btn" onclick="changeCategory('cumpleanos')">Cumpleaños 🎂</button>
+        </div>
+
+        <div class="products-grid" id="productsContainer">
+            <p class="loading">Cargando diseños...</p>
+        </div>
+    </main>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <img id="modalImage" src="" alt="Diseño ampliado">
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Miktlan Store. Todos los derechos reservados.</p>
+        <p>Calidad, estilo y personalización al alcance de tu mano.</p>
+        <p>Contacto: info@miktlanstore.com | Teléfono: +1-800-123-4567</p>
+    </footer>
+
+    <script>
+        let currentCategory = 'general';
+
+        function changeCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+            try { if (event && event.target) event.target.classList.add('active'); } catch(e) {}
+            loadImages();
+        }
+
+        async function loadImages() {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '<p class="loading">Cargando diseños...</p>';
+            const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
+
+            try {
+                const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
+                if (!resp.ok) throw new Error('No se pudo obtener la lista de imágenes');
+                const images = await resp.json();
+
+                if (!images || images.length === 0) {
+                    const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
+                    container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}.</p>`;
+                    return;
+                }
+
+                let html = '';
+                images.forEach((path) => {
+                    const filename = path.split('/').pop();
+                    const name = filename.split('.')[0];
+                    html += `
+                        <div class="product-card">
+                            <img src="${path}" alt="Diseño ${name}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                            <div class="product-info">
+                                <h3>Diseño #${name}</h3>
+                                <p>Diseño personalizado de alta calidad.</p>
+                                <div class="btn-container">
+                                    <button class="btn-design" onclick="viewDesign('${path}')">Ver Diseño</button>
+                                    <button class="btn-order" onclick="orderProduct('Diseño #${name}')">Ordenar</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<p class="error">Error al cargar las imágenes: ${error.message}</p>`;
+            }
+        }
+
+        function viewDesign(imagePath) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imagePath;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) closeModal();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeModal();
+        });
+
+        function orderProduct(productName) {
+            alert('¡Gracias por tu interés en: ' + productName + '!\n\nSerás redirigido al formulario de pedido.');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - Miktlan Store</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-card h3 {
+            color: #9C27B0;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .contact-card p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .contact-card a {
+            color: #9C27B0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-card a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-actions {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .contact-actions .btn-add {
+            padding: 10px 20px;
+        }
+
+        #map {
+            width: 100%;
+            height: 300px;
+            border: 0;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .contact-card form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact-card label {
+            display: flex;
+            flex-direction: column;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .contact-card input,
+        .contact-card textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .contact-card input:focus,
+        .contact-card textarea:focus {
+            outline: none;
+            border-color: #9C27B0;
+            box-shadow: 0 0 5px rgba(156, 39, 176, 0.3);
+        }
+
+        .contact-card button {
+            align-self: flex-start;
+        }
+
+        .msg {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .msg.success {
+            background: #e6ffed;
+            border: 1px solid #b7f2c7;
+            color: #0b8a3a;
+        }
+
+        .msg.error {
+            background: #ffecec;
+            border: 1px solid #f1b3b3;
+            color: #a00;
+        }
+
+        .contact-card .note {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 800px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .contact-actions {
+                flex-direction: column;
+            }
+
+            .contact-actions .btn-add {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo"><image src="scr/Logo_MS-removebg-preview.png" alt="Miktlan Store Logo" width="195" height="195"></div>
+            <h1>Miktlan Store</h1>
+        </div>
+    </header>
+
+    <!-- Navbar -->
+    <nav>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li class="dropdown">
+                <a href="#productos">Productos ▼</a>
+                <div class="dropdown-content">
+                    <a href="Tazas/tazas.html">Tazas</a>
+                    <a href="Cuadros/cuadros.html">Cuadros</a>
+                    <a href="Playeras/playeras.html">Playeras</a>
+                    <a href="Otros/otros.html">Otros</a>
+                </div>
+            </li>
+            <li><a href="contacto.html">Contacto</a></li>
+            <li><a href="#nosotros">Nosotros</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <h2 class="section-title">Contacto</h2>
+
+        <div class="contact-grid">
+            <!-- Tarjeta de Contacto Directo -->
+            <div class="contact-card">
+                <h3>Habla con Nosotros</h3>
+                
+                <p><strong>📱 Teléfono:</strong></p>
+                <a href="tel">7711095023</a>
+                
+                <p style="margin-top: 15px;"><strong>💬 WhatsApp:</strong></p>
+                <a href="https://wa.me/527711095023?text=Hola%20Miktlan%20Store%2C%20me%20interesa%20tus%20productos" target="_blank">Enviar mensaje por WhatsApp</a>
+                
+                <p style="margin-top: 15px;"><strong>✉️ Email:</strong></p>
+                <a href="mailto:contacto@miktlanstore.com">miktlanstudio@hotmail.com</a>
+                
+                <p style="margin-top: 15px;"><strong>📍 Dirección:</strong></p>
+                <p>Pachuca de Soto, Hidalgo</p>
+                
+                <p style="margin-top: 15px;"><strong>⏰ Horario de Atención:</strong></p>
+                <p>Lunes a Viernes: 10:00 AM - 7:00 PM<br>Sábados: 10:00 AM - 5:00 PM<br>Domingos: Cerrado</p>
+
+                <div class="contact-actions">
+                    <button class="btn-add" onclick="window.location.href='tel:+521234567890'">Llamar</button>
+                    <button class="btn-add" onclick="window.location.href='https://wa.me/527711095023?text=Hola%20Miktlan%20Store%2C%20me%20interesa%20tus%20productos'" style="background-color: #25D366;">WhatsApp</button>
+                </div>
+
+                <h4 style="margin-top: 30px; color: #9C27B0;">Ubicación</h4>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d468.34309189158375!2d-98.761448744171!3d20.102954816251064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1a12cdd570581%3A0x8c2a90b49dfcc3e8!2sMiktlan%20Studios!5e0!3m2!1ses-419!2smx!4v1767044864409!5m2!1ses-419!2smx" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+
+            <!-- Tarjeta de Formulario -->
+            <div class="contact-card">
+                <h3>Envíanos un Mensaje</h3>
+                <p style="color: #666; margin-bottom: 20px;">Completa el formulario y nos pondremos en contacto contigo lo antes posible.</p>
+                
+                <form id="contactForm" action="https://formspree.io/f/your-id" method="POST">
+                    <label for="name">Tu Nombre</label>
+                    <input type="text" id="name" name="name" required>
+                    
+                    <label for="email">Tu Email</label>
+                    <input type="email" id="email" name="email" required>
+                    
+                    <label for="phone">Tu Teléfono (Opcional)</label>
+                    <input type="tel" id="phone" name="phone">
+                    
+                    <label for="subject">Asunto</label>
+                    <input type="text" id="subject" name="subject" placeholder="¿Sobre qué es tu consulta?" required>
+                    
+                    <label for="message">Mensaje</label>
+                    <textarea id="message" name="message" rows="6" placeholder="Escribe tu mensaje aquí..." required></textarea>
+                    
+                    <input type="hidden" name="_subject" value="Nuevo mensaje desde Contacto - Miktlan Store">
+                    <button type="submit" class="btn-add">Enviar Mensaje</button>
+                </form>
+
+                <div id="formMsg" class="msg"></div>
+
+                <p class="note">
+                    <strong>Nota:</strong> Este formulario utiliza <a href="https://formspree.io" target="_blank">Formspree</a>. Para activarlo, crea una cuenta en formspree.io y reemplaza <code>your-id</code> en el atributo <code>action</code> del formulario con tu ID de Formspree. Alternativamente, puedes usar <strong>mailto:contacto@miktlanstore.com</strong> como acción del formulario para enviar directamente al email.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Añadir estilos dinámicos para el dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownBtn = dropdown.querySelector('a');
+            const dropdownContent = dropdown.querySelector('.dropdown-content');
+
+            dropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdownContent.style.display = 'none';
+                }
+            });
+        });
+
+        // Manejo del formulario de contacto
+        const form = document.getElementById('contactForm');
+        const formMsg = document.getElementById('formMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            formMsg.style.display = 'none';
+            
+            const action = form.getAttribute('action') || '';
+            
+            // Validar que se haya configurado Formspree
+            if (action.includes('your-id')) {
+                formMsg.textContent = '⚠️ Error: Reemplaza "your-id" en el formulario por tu ID de Formspree o usa mailto:contacto@miktlanstore.com';
+                formMsg.className = 'msg error';
+                formMsg.style.display = 'block';
+                return;
+            }
+
+            // Si usa mailto, redirigir directamente
+            if (action.startsWith('mailto:')) {
+                window.location.href = action;
+                return;
+            }
+
+            const data = new FormData(form);
+            
+            try {
+                const res = await fetch(action, {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (res.ok) {
+                    formMsg.textContent = '✅ ¡Mensaje enviado correctamente! Te responderemos muy pronto.';
+                    formMsg.className = 'msg success';
+                    form.reset();
+                } else {
+                    const json = await res.json();
+                    formMsg.textContent = '❌ ' + (json?.error || 'Ocurrió un error al enviar el mensaje.');
+                    formMsg.className = 'msg error';
+                }
+            } catch (err) {
+                formMsg.textContent = '❌ Error de conexión. Por favor, intenta enviando un correo directo a: contacto@miktlanstore.com';
+                formMsg.className = 'msg error';
+            }
+            
+            formMsg.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

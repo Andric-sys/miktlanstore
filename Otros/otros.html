@@ -213,119 +213,113 @@
         </div>
     </main>
 
-    <!-- Modal para ampliar imagen -->
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal()">&times;</button>
-            <img id="modalImage" src="" alt="Diseño ampliado">
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Miktlan Store. Todos los derechos reservados.</p>
-        <p>Calidad, estilo y personalización al alcance de tu mano.</p>
-        <p>Contacto: info@miktlanstore.com | Teléfono: +1-800-123-4567</p>
-    </footer>
-
     <script>
         let currentCategory = 'general';
+        let imagesList = [];
+        let currentPage = 1;
+        const pageSize = 30;
 
-        // Función para cambiar de categoría
         function changeCategory(category) {
             currentCategory = category;
-            
-            // Actualizar botones activos
-            document.querySelectorAll('.date-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Cargar imágenes de la nueva categoría
+            document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+            try { if (event && event.target) event.target.classList.add('active'); } catch(e) {}
+            currentPage = 1;
             loadImages();
         }
 
-        // Cargar las imágenes numeradas automáticamente
         async function loadImages() {
             const container = document.getElementById('productsContainer');
-            
+            container.innerHTML = '<p class="loading">Cargando diseños...</p>';
+            const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
+
             try {
-                let images = [];
-                let imageNumber = 1;
-                let consecutiveMissing = 0;
-                const maxConsecutiveMissing = 10; // Si encuentra 10 imágenes faltantes seguidas, detiene la búsqueda
-                
-                container.innerHTML = '<p class="loading">Buscando imágenes...</p>';
-                
-                // Determinar la carpeta según la categoría
-                const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
-                
-                // Buscar imágenes numeradas
-                while (consecutiveMissing < maxConsecutiveMissing) {
-                    const imagePath = `${imageFolder}/${imageNumber}.png`;
-                    
-                    try {
-                        // Intentar obtener la imagen
-                        const response = await fetch(imagePath, { method: 'HEAD' });
-                        
-                        if (response.ok) {
-                            images.push(`${imageNumber}.png`);
-                            consecutiveMissing = 0; // Resetear contador
-                            console.log(`Imagen encontrada: ${imagePath}`);
-                        } else {
-                            consecutiveMissing++;
-                            console.log(`Imagen no encontrada: ${imagePath}`);
-                        }
-                    } catch (error) {
-                        consecutiveMissing++;
-                        console.log(`Error al buscar: ${imagePath}`);
-                    }
-                    
-                    imageNumber++;
-                    
-                    // Mostrar progreso cada 10 imágenes
-                    if (imageNumber % 10 === 0) {
-                        container.innerHTML = `<p class="loading">Buscando imágenes... (${imageNumber - 1} encontradas)</p>`;
-                    }
-                }
-                
-                console.log('Búsqueda completada. Imágenes encontradas:', images.length);
-                
-                if (images.length === 0) {
+                const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
+                if (!resp.ok) throw new Error('No se pudo obtener la lista de imágenes');
+                imagesList = await resp.json();
+
+                if (!imagesList || imagesList.length === 0) {
                     const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
                     container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}. Asegúrate de que existen en la carpeta Otros/${imageFolder}/ nombradas como 1.png, 2.png, 3.png, etc.</p>`;
+                    updatePagination();
                     return;
                 }
-                
-                // Crear las tarjetas de productos
+
+                renderPage(1);
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<p class="error">Error al cargar las imágenes: ${error.message}</p>`;
+            }
+        }
+
+        function renderPage(page) {
+            const container = document.getElementById('productsContainer');
+            currentPage = page;
+            const start = (page - 1) * pageSize;
+            const pageItems = imagesList.slice(start, start + pageSize);
+
+            if (!pageItems || pageItems.length === 0) {
+                container.innerHTML = '<p class="error">No hay imágenes en esta página.</p>';
+            } else {
                 let html = '';
-                images.forEach((image, index) => {
-                    const imageNumber = image.split('.')[0];
+                pageItems.forEach((path) => {
+                    const filename = path.split('/').pop();
+                    const name = filename.split('.')[0];
                     html += `
                         <div class="product-card">
-                            <img src="${imageFolder}/${image}" alt="Producto ${imageNumber}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                            <img src="${path}" alt="Diseño ${name}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
                             <div class="product-info">
-                                <h3>Producto #${imageNumber}</h3>
-                                <p>Artículo personalizado de alta calidad.</p>
+                                <h3>Diseño #${name}</h3>
+                                <p>Diseño personalizado de alta calidad.</p>
                                 <div class="btn-container">
-                                    <button class="btn-design" onclick="viewDesign('${imageFolder}/${image}')">Ver Diseño</button>
-                                    <button class="btn-order" onclick="orderProduct('Producto #${imageNumber}')">Ordenar</button>
+                                    <button class="btn-design" onclick="viewDesign('${path}')">Ver Diseño</button>
+                                    <button class="btn-order" onclick="orderProduct('Diseño #${name}')">Ordenar</button>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
-                
                 container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error:', error);
-                container.innerHTML = '<p class="error">Error al cargar las imágenes: ' + error.message + '</p>';
             }
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            let pag = document.getElementById('pagination');
+            const container = document.getElementById('productsContainer');
+            if (!pag) {
+                pag = document.createElement('div');
+                pag.id = 'pagination';
+                pag.style.textAlign = 'center';
+                pag.style.margin = '20px 0';
+                container.parentNode.insertBefore(pag, container.nextSibling);
+            }
+
+            const totalPages = Math.max(1, Math.ceil(imagesList.length / pageSize));
+            if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+            let html = '';
+            html += `<button ${currentPage===1?"disabled":""} onclick="changePage(${currentPage-1})">Prev</button>`;
+
+            const start = Math.max(1, currentPage - 3);
+            const end = Math.min(totalPages, currentPage + 3);
+            for (let i = start; i <= end; i++) {
+                html += ` <button ${i===currentPage?"disabled":""} onclick="changePage(${i})">${i}</button> `;
+            }
+
+            html += `<button ${currentPage===totalPages?"disabled":""} onclick="changePage(${currentPage+1})">Next</button>`;
+            pag.innerHTML = html;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.max(1, Math.ceil(imagesList.length / pageSize));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            renderPage(page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function viewDesign(imagePath) {
-            // Mostrar la imagen en un modal sin abrir nueva pestaña
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             modalImage.src = imagePath;
@@ -337,28 +331,24 @@
             modal.classList.remove('show');
         }
 
-        // Cerrar modal al hacer clic fuera de la imagen
         window.onclick = function(event) {
             const modal = document.getElementById('imageModal');
-            if (event.target === modal) {
-                closeModal();
-            }
+            if (event.target === modal) closeModal();
         }
 
-        // Cerrar modal con la tecla Escape
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
+            if (event.key === 'Escape') closeModal();
         });
 
         function orderProduct(productName) {
             alert('¡Gracias por tu interés en: ' + productName + '!\n\nSerás redirigido al formulario de pedido.');
-            // Aquí puedes redirigir a una página de pedido o abrir un formulario
-            // window.location.href = 'orden.html?producto=' + encodeURIComponent(productName);
         }
 
-        // Cargar las imágenes cuando la página carga
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+            alert('¡Gracias por tu interés en: ' + productName + '!\n\nSerás redirigido al formulario de pedido.');
+        }
+
         document.addEventListener('DOMContentLoaded', loadImages);
     </script>
 </body>

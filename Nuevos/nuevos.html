@@ -116,17 +116,13 @@
                     const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
 
                     try {
-                        const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
-                        if (!resp.ok) throw new Error('No se pudo obtener la lista de imágenes');
-                        imagesList = await resp.json();
-
+                        imagesList = await fetchImagesList(imageFolder);
                         if (!imagesList || imagesList.length === 0) {
                             const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
                             container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}.</p>`;
                             updatePagination();
                             return;
                         }
-
                         renderPage(1);
                     } catch (error) {
                         console.error(error);
@@ -285,42 +281,63 @@
             container.innerHTML = '<p class="loading">Cargando diseños...</p>';
             const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
 
-            try {
-                const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
-                if (!resp.ok) throw new Error('No se pudo obtener la lista de imágenes');
-                const images = await resp.json();
+                try {
+                    const images = await fetchImagesList(imageFolder);
 
-                if (!images || images.length === 0) {
-                    const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
-                    container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}.</p>`;
-                    return;
-                }
+                    if (!images || images.length === 0) {
+                        const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
+                        container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}.</p>`;
+                        return;
+                    }
 
-                let html = '';
-                images.forEach((path) => {
-                    const filename = path.split('/').pop();
-                    const name = filename.split('.')[0];
-                    html += `
-                        <div class="product-card">
-                            <img src="${path}" alt="Diseño ${name}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
-                            <div class="product-info">
-                                <h3>Diseño #${name}</h3>
-                                <p>Diseño personalizado de alta calidad.</p>
-                                <div class="btn-container">
-                                    <button class="btn-design" onclick="viewDesign('${path}')">Ver Diseño</button>
-                                    <button class="btn-order" onclick="orderProduct('Diseño #${name}')">Ordenar</button>
+                    let html = '';
+                    images.forEach((path) => {
+                        const filename = path.split('/').pop();
+                        const name = filename.split('.')[0];
+                        html += `
+                            <div class="product-card">
+                                <img src="${path}" alt="Diseño ${name}" class="product-image" loading="lazy" onerror="this.alt='Imagen no encontrada'">
+                                <div class="product-info">
+                                    <h3>Diseño #${name}</h3>
+                                    <p>Diseño personalizado de alta calidad.</p>
+                                    <div class="btn-container">
+                                        <button class="btn-design" onclick="viewDesign('${path}')">Ver Diseño</button>
+                                        <button class="btn-order" onclick="orderProduct('Diseño #${name}')">Ordenar</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
 
-                container.innerHTML = html;
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = `<p class="error">Error al cargar las imágenes: ${error.message}</p>`;
-            }
+                    container.innerHTML = html;
+                } catch (error) {
+                    console.error(error);
+                    container.innerHTML = `<p class="error">Error al cargar las imágenes: ${error.message}</p>`;
+                }
         }
+
+            async function fetchImagesList(imageFolder) {
+                try {
+                    const resp = await fetch(`list_images.php?folder=${encodeURIComponent(imageFolder)}`);
+                    if (resp.ok) {
+                        const text = await resp.text();
+                        try {
+                            const data = JSON.parse(text);
+                            return Array.isArray(data) ? data : (Array.isArray(data.imagenes) ? data.imagenes : []);
+                        } catch (e) {}
+                    }
+                } catch (e) {}
+
+                try {
+                    const r2 = await fetch('imagenes.json');
+                    if (r2.ok) {
+                        const data2 = await r2.json();
+                        return Array.isArray(data2) ? data2 : (Array.isArray(data2.imagenes) ? data2.imagenes : []);
+                    }
+                } catch (e) {}
+
+                throw new Error('No se pudo obtener la lista de imágenes (PHP y JSON fallaron)');
+            }
 
         function viewDesign(imagePath) {
             const modal = document.getElementById('imageModal');

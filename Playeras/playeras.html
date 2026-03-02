@@ -199,7 +199,6 @@
 
         <!-- Selector de Fechas Especiales -->
         <div style="text-align: center; margin: 30px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-            <button class="date-btn active" onclick="changeCategory('general')">Todos</button>
             <button class="date-btn" onclick="changeCategory('san-valentin')">San Valentín ❤️</button>
             <button class="date-btn" onclick="changeCategory('navidad')">Navidad 🎄</button>
             <button class="date-btn" onclick="changeCategory('anio-nuevo')">Año Nuevo 🎊</button>
@@ -214,7 +213,7 @@
     </main>
 
     <script>
-        let currentCategory = 'general';
+        let currentCategory = null;
         let imagesList = [];
         let currentPage = 1;
         const pageSize = 30;
@@ -230,13 +229,17 @@
         async function loadImages() {
             const container = document.getElementById('productsContainer');
             container.innerHTML = '<p class="loading">Cargando diseños...</p>';
-            const imageFolder = currentCategory === 'general' ? 'imagenes' : `imagenes/${currentCategory}`;
+            if (!currentCategory) {
+                container.innerHTML = `<p class="error">Disculpa, apenas se despertó el diseñador.</p>`;
+                return;
+            }
+
+            const imageFolder = `imagenes/${currentCategory}`;
 
             try {
                 imagesList = await fetchImagesList(imageFolder);
                 if (!imagesList || imagesList.length === 0) {
-                    const categoryName = currentCategory === 'general' ? 'generales' : `de ${currentCategory}`;
-                    container.innerHTML = `<p class="error">No se encontraron imágenes ${categoryName}. Asegúrate de que existen en la carpeta Playeras/${imageFolder}/ nombradas como 1.png, 2.png, 3.png, etc.</p>`;
+                    container.innerHTML = `<p class="error">Disculpa, apenas se despertó el diseñador.</p>`;
                     updatePagination();
                     return;
                 }
